@@ -1,10 +1,10 @@
-use clap::{Parser, Subcommand};
+use clap::{Parser, Subcommand, Args};
 
 pub mod story;
+
 /// Simple command line app to get Shortcut stories
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
-
 struct Cli {
     #[clap(subcommand)]
     command: Commands,
@@ -12,10 +12,16 @@ struct Cli {
 
 #[derive(Subcommand, Debug)]
 enum Commands {
-    Story{
-        #[clap(value_parser = clap::value_parser!(u16).range(1..=9999))]
-        id: u16
-    },
+    #[clap(subcommand)]
+    Story(StorySubcommand)
+}
+
+#[derive(Subcommand, Debug)]
+enum StorySubcommand {
+    Search {
+        #[clap(value_parser)]
+        query: String
+    }
 }
 
 #[tokio::main]
@@ -24,12 +30,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cli = Cli::parse();
 
     match &cli.command {
-        Commands::Story { id } => {
-            let story = story::fetch_story(id).await?;
-            match story {
-                Some(story) => {story.print_summary();}
-                None => {println!("No story found with id {}", id);}
-            }
+        Commands::Story(subcommand)  => {
+            match &subcommand {
+                StorySubcommand::Search{query} => {
+                    println!("Query: {}", query)
+                }
+            };
         }
     }
 
