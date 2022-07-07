@@ -3,6 +3,8 @@ use log::{debug, error};
 use reqwest::{header, Error, StatusCode};
 use serde::{Deserialize, Serialize};
 
+use termion::{color, style};
+
 use std::collections::HashMap;
 use std::env;
 
@@ -17,12 +19,20 @@ pub struct Story {
     name: String,
     app_url: String,
     created_at: String,
-    completed_at: Option<String>
+    completed_at: Option<String>,
 }
 
 impl Story {
-    pub fn print_summary(&self){
-        println!("sc-{} : {}", self.id, self.name);
+    pub fn print_line(&self) {
+        println!(
+            "{}{}sc-{}{}{}: {}",
+            style::Bold,
+            color::Fg(color::Green),
+            self.id,
+            style::Reset,
+            color::Fg(color::Reset),
+            self.name
+        );
     }
 }
 
@@ -31,15 +41,11 @@ struct Data<T> {
     data: Vec<T>,
 }
 
-pub async fn fetch_story(id: &u16) -> Result<Option<Story>, Error> {
+pub async fn search_stories(query: &str) -> Result<Vec<Story>, Error> {
     let api_key = env::var("SHORTCUT_API_KEY").unwrap();
-    debug!("Fetching story {}", id);
     let client = reqwest::Client::new();
 
-    let mut id_str = String::from("id:");
-    id_str.push_str(&id.to_string());
-
-    let query = HashMap::from([("query", id_str)]);
+    let query = HashMap::from([("query", query)]);
     debug!("Sending query payload {:?}", query);
 
     let response = client
@@ -52,15 +58,9 @@ pub async fn fetch_story(id: &u16) -> Result<Option<Story>, Error> {
 
     match response.status() {
         StatusCode::OK => {
-            let mut result = response.json::<ShortcutSearchResponse>().await?;
+            let result = response.json::<ShortcutSearchResponse>().await?;
 
-            debug!("Successfully parsed story {:?}", result);
-
-            // TODO: Currently this just takes the last story of
-            // any results, should probably handle this better.
-            let story = result.stories.data.pop();
-
-            Ok(story)
+            Ok(result.stories.data)
         }
         _ => {
             // TODO Should probably do proper error handling here.
@@ -69,7 +69,7 @@ pub async fn fetch_story(id: &u16) -> Result<Option<Story>, Error> {
                 response.status(),
                 response.text().await?
             );
-            Ok(None)
+            panic!("recieved bad response")
         }
     }
 }
