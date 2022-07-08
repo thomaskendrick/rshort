@@ -1,12 +1,15 @@
 use log::{debug, error};
 
-use reqwest::{header, Error, StatusCode};
+use anyhow::{Result, anyhow};
+
+use reqwest::{header, StatusCode};
 use serde::{Deserialize, Serialize};
 
 use termion::{color, style};
 
 use std::collections::HashMap;
-use std::env;
+
+use crate::RShortConfig;
 
 #[derive(Serialize, Deserialize, Debug)]
 struct ShortcutSearchResponse {
@@ -25,7 +28,7 @@ pub struct Story {
 impl Story {
     pub fn print_line(&self) {
         println!(
-            "{}{}sc-{}{}{}: {}",
+            "{}{}#{}{}{}: {}",
             style::Bold,
             color::Fg(color::Green),
             self.id,
@@ -41,8 +44,7 @@ struct Data<T> {
     data: Vec<T>,
 }
 
-pub async fn search_stories(query: &str) -> Result<Vec<Story>, Error> {
-    let api_key = env::var("SHORTCUT_API_KEY").unwrap();
+pub async fn search_stories(query: &str, cfg: &RShortConfig) -> Result<Vec<Story>> {
     let client = reqwest::Client::new();
 
     let query = HashMap::from([("query", query)]);
@@ -50,7 +52,7 @@ pub async fn search_stories(query: &str) -> Result<Vec<Story>, Error> {
 
     let response = client
         .get("https://api.app.shortcut.com/api/v3/search")
-        .header("Shortcut-Token", api_key)
+        .header("Shortcut-Token", cfg.api_key.to_owned())
         .header(header::CONTENT_TYPE, "application/json")
         .json(&query)
         .send()
@@ -59,17 +61,10 @@ pub async fn search_stories(query: &str) -> Result<Vec<Story>, Error> {
     match response.status() {
         StatusCode::OK => {
             let result = response.json::<ShortcutSearchResponse>().await?;
-
             Ok(result.stories.data)
         }
         _ => {
-            // TODO Should probably do proper error handling here.
-            error!(
-                "Recieved bad status code ({}) processing query. Message: {}",
-                response.status(),
-                response.text().await?
-            );
-            panic!("recieved bad response")
+            Err(anyhow!("Recieved a bad status code when searching stories: {}", response.status()))
         }
     }
 }
