@@ -1,6 +1,6 @@
-use clap::{Parser, Subcommand};
-use serde::{Serialize, Deserialize};
 use anyhow::Result;
+use clap::{Parser, Subcommand};
+use serde::{Deserialize, Serialize};
 
 pub mod story;
 
@@ -25,7 +25,7 @@ pub struct RShortConfig {
 impl Default for RShortConfig {
     fn default() -> Self {
         RShortConfig {
-            api_key: "".to_string()
+            api_key: "".to_string(),
         }
     }
 }
@@ -34,10 +34,10 @@ impl Default for RShortConfig {
 enum Commands {
     #[clap(subcommand)]
     Story(StorySubcommand),
-    Config{
+    Config {
         #[clap(value_parser)]
         key: String,
-    }
+    },
 }
 
 #[derive(Subcommand, Debug)]
@@ -55,11 +55,10 @@ async fn main() -> Result<()> {
 
     let mut cfg: RShortConfig = confy::load("rshort")?;
 
-    if cfg.api_key.len() == 0 && !matches!(cli.command, Commands::Config { key: _ })  {
+    if cfg.api_key.len() == 0 && !matches!(cli.command, Commands::Config { key: _ }) {
         println!("No API key configured. Provide one using 'rshort config'");
         return Ok(());
     }
-
 
     match &cli.command {
         Commands::Story(subcommand) => {
@@ -78,7 +77,7 @@ async fn main() -> Result<()> {
                     println!("==========================");
                 }
             };
-        },
+        }
         Commands::Config { key } => {
             cfg.api_key = key.to_string();
             confy::store("rshort", cfg)?;

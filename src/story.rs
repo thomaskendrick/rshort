@@ -1,6 +1,6 @@
-use log::{debug, error};
+use log::debug;
 
-use anyhow::{Result, anyhow};
+use anyhow::{anyhow, Result};
 
 use reqwest::{header, StatusCode};
 use serde::{Deserialize, Serialize};
@@ -63,8 +63,9 @@ pub async fn search_stories(query: &str, cfg: &RShortConfig) -> Result<Vec<Story
             let result = response.json::<ShortcutSearchResponse>().await?;
             Ok(result.stories.data)
         }
-        _ => {
-            Err(anyhow!("Recieved a bad status code when searching stories: {}", response.status()))
-        }
+        _ => Err(anyhow!(
+            "Recieved a bad status code when searching stories: {}",
+            response.status()
+        )),
     }
 }
