@@ -3,6 +3,8 @@ use clap::{Parser, Subcommand};
 use serde::{Deserialize, Serialize};
 
 pub mod story;
+pub mod task;
+pub mod api;
 
 #[derive(Parser, Debug)]
 #[clap(
@@ -56,6 +58,7 @@ async fn main() -> Result<()> {
     let mut cfg: RShortConfig = confy::load("rshort")?;
 
     if cfg.api_key.len() == 0 && !matches!(cli.command, Commands::Config { key: _ }) {
+        // TODO: Maybe do a wee regex here to validate the API Token
         println!("No API key configured. Provide one using 'rshort config'");
         return Ok(());
     }
@@ -64,17 +67,21 @@ async fn main() -> Result<()> {
         Commands::Story(subcommand) => {
             match &subcommand {
                 StorySubcommand::Search { query } => {
-                    let search_result = story::search_stories(query, &cfg).await?;
+                    let client = api::StorybookClient::new(&cfg);
+
+                    let search_result = client.search_stories(query).await?;
+
                     if search_result.is_empty() {
                         println!("Search returned no results!");
                         return Ok(());
                     }
-                    println!("Search returned {} results", search_result.len());
+                    println!("\nSearch returned {} results", search_result.len());
                     println!("==========================");
                     for story in search_result {
+                        println!("{:?}", story);
                         story.print_line();
                     }
-                    println!("==========================");
+                    println!("==========================\n");
                 }
             };
         }
