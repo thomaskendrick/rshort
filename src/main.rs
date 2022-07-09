@@ -2,9 +2,9 @@ use anyhow::Result;
 use clap::{Parser, Subcommand};
 use serde::{Deserialize, Serialize};
 
+pub mod api;
 pub mod story;
 pub mod task;
-pub mod api;
 
 #[derive(Parser, Debug)]
 #[clap(
@@ -95,8 +95,9 @@ async fn main() -> Result<()> {
                     if let Some(story) = result {
                         story.print_line();
                         story.print_tasklist();
+                    } else {
+                        println!("No story found with id: {}", id);
                     }
-
                 }
             };
         }
@@ -105,6 +106,5 @@ async fn main() -> Result<()> {
             confy::store("rshort", cfg)?;
         }
     }
-
     Ok(())
 }

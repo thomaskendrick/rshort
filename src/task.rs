@@ -1,4 +1,4 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Task {
@@ -10,7 +10,7 @@ pub struct Task {
     created_at: String,
     /// Full text of the Task.
     description: String,
-    /// A string description of this resource. 
+    /// A string description of this resource.
     entity_type: String,
     /// This field can be set to another unique ID. In the case that the Task has been imported from another tool, the ID in the other tool can be indicated here.
     external_id: Option<String>,
@@ -27,14 +27,14 @@ pub struct Task {
     /// The unique identifier of the parent Story.  
     story_id: usize,
     /// The time/date the Task was updated.
-    updated_at: Option<String>
+    updated_at: Option<String>,
 }
 
 impl Task {
-    pub fn print_checkbox_line (&self){
+    pub fn print_checkbox_line(&self) {
         let togglebox: &str;
         if self.complete {
-            togglebox = "-[x]" 
+            togglebox = "-[x]"
         } else {
             togglebox = "-[ ]"
         }

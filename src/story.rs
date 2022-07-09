@@ -1,8 +1,7 @@
-use serde::{Deserialize, Serialize};
 use crate::task::Task;
+use serde::{Deserialize, Serialize};
 
 use termion::{color, style};
-
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Story {
@@ -20,7 +19,6 @@ pub struct Story {
 
     // TODO Comments struct
     // comments: Vec<StoryComment>
-
     /// A true/false boolean indicating if the Story has been completed.
     completed: bool,
     /// The time/date the Story was completed.
@@ -32,7 +30,6 @@ pub struct Story {
 
     // TODO StoryCustomField struct
     // custom_fields: Vec<StoryCustomField>
-
     /// The cycle time (in seconds) of this story when complete.
     cycle_time: Option<usize>,
     /// The due date of the story.
@@ -52,7 +49,6 @@ pub struct Story {
 
     // TODO UploadedFile struct
     // files Vec<UploadedFile>
-
     /// An array of UUIDs for any Members listed as Followers.
     follower_ids: Vec<String>,
     /// The ID of the group associated with the story.
@@ -68,7 +64,6 @@ pub struct Story {
 
     // TODO LabelSlim struct
     // labels: Vec<LabelSlim>
-
     lead_time: Option<usize>,
     /// An array of Member IDs that have been mentioned in the Story description.
     member_mention_ids: Vec<String>,
@@ -85,7 +80,6 @@ pub struct Story {
 
     // TODO PullRequest struct
     // pull_requests: Vec<PullRequest>
-
     /// The ID of the Member that requested the story.
     requested_by_id: String,
     /// A true/false boolean indicating if the Story has been started.
@@ -121,7 +115,7 @@ impl Story {
             self.name
         );
     }
-    pub fn print_tasklist(&self){
+    pub fn print_tasklist(&self) {
         for task in &self.tasks {
             task.print_checkbox_line();
         }
