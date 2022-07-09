@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use crate::task::Task;
 
 use termion::{color, style};
 
@@ -97,9 +98,8 @@ pub struct Story {
     story_template_id: Option<String>,
     /// The type of story (feature, bug, chore).
     story_type: String,
-
-    // TODO Task struct
-    // tasks: Vec<Task>
+    /// An array of tasks connected to the story.
+    tasks: Vec<Task>,
 
     /// The time/date the Story was updated.
     updated_at: Option<String>,
@@ -120,5 +120,10 @@ impl Story {
             color::Fg(color::Reset),
             self.name
         );
+    }
+    pub fn print_tasklist(&self){
+        for task in &self.tasks {
+            task.print_checkbox_line();
+        }
     }
 }

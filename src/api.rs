@@ -42,8 +42,28 @@ impl StorybookClient {
 
         match response.status() {
             StatusCode::OK => {
-                let result = response.json::<ShortcutSearchResponse>().await?;
-                Ok(result.stories.data)
+                 let result = response.json::<ShortcutSearchResponse>().await?;
+                 Ok(result.stories.data)
+            }
+            _ => Err(anyhow!(
+                "Recieved a bad status code when searching stories: {}",
+                response.status()
+            )),
+        }
+    }
+    pub async fn get_story(&self, id: &usize) -> Result<Option<Story>> {
+        let response = self.client
+            .get(format!("https://api.app.shortcut.com/api/v3/stories/{}", id))
+            .send()
+            .await?;
+
+        match response.status() {
+            StatusCode::OK => {
+                 let story = response.json::<Story>().await?;
+                 Ok(Some(story))
+            }
+            StatusCode::NOT_FOUND => {
+                Ok(None)
             }
             _ => Err(anyhow!(
                 "Recieved a bad status code when searching stories: {}",

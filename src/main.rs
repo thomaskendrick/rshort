@@ -48,6 +48,10 @@ enum StorySubcommand {
         #[clap(value_parser)]
         query: String,
     },
+    Get {
+        #[clap(value_parser)]
+        id: usize,
+    },
 }
 
 #[tokio::main]
@@ -78,10 +82,21 @@ async fn main() -> Result<()> {
                     println!("\nSearch returned {} results", search_result.len());
                     println!("==========================");
                     for story in search_result {
-                        println!("{:?}", story);
                         story.print_line();
+                        story.print_tasklist();
                     }
                     println!("==========================\n");
+                }
+                StorySubcommand::Get { id } => {
+                    let client = api::StorybookClient::new(&cfg);
+
+                    let result = client.get_story(id).await?;
+
+                    if let Some(story) = result {
+                        story.print_line();
+                        story.print_tasklist();
+                    }
+
                 }
             };
         }
