@@ -25,7 +25,7 @@ pub struct Task {
     /// The number corresponding to the Task’s position within a list of Tasks on a Story.
     position: usize,
     /// The unique identifier of the parent Story.  
-    story_id: usize,
+    pub story_id: usize,
     /// The time/date the Task was updated.
     updated_at: Option<String>,
 }
@@ -34,10 +34,10 @@ impl Task {
     pub fn print_checkbox_line(&self) {
         let togglebox: &str;
         if self.complete {
-            togglebox = "-[x]"
+            togglebox = "[x]"
         } else {
-            togglebox = "-[ ]"
+            togglebox = "[ ]"
         }
-        println!("\t{} : {}", togglebox, self.description);
+        println!("{} - #{} : {}", togglebox, self.id, self.description);
     }
 }

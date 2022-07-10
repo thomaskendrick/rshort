@@ -52,6 +52,12 @@ enum StorySubcommand {
         #[clap(value_parser)]
         id: usize,
     },
+    AddTask {
+        #[clap(value_parser)]
+        id: usize,
+        #[clap(value_parser)]
+        message: String,
+    },
 }
 
 #[tokio::main]
@@ -79,13 +85,10 @@ async fn main() -> Result<()> {
                         println!("Search returned no results!");
                         return Ok(());
                     }
-                    println!("\nSearch returned {} results", search_result.len());
-                    println!("==========================");
+
                     for story in search_result {
                         story.print_line();
-                        story.print_tasklist();
                     }
-                    println!("==========================\n");
                 }
                 StorySubcommand::Get { id } => {
                     let client = api::StorybookClient::new(&cfg);
@@ -93,8 +96,23 @@ async fn main() -> Result<()> {
                     let result = client.get_story(id).await?;
 
                     if let Some(story) = result {
-                        story.print_line();
+                        story.print_details();
                         story.print_tasklist();
+                    } else {
+                        println!("No story found with id: {}", id);
+                    }
+                }
+                StorySubcommand::AddTask { id, message } => {
+                    let client = api::StorybookClient::new(&cfg);
+
+                    let result = client.add_story_task(id, message).await?;
+
+                    if let Some(task) = result {
+                        let story = client.get_story(&task.story_id).await?;
+                        if let Some(story) = story {
+                            story.print_details();
+                            story.print_tasklist();
+                        }
                     } else {
                         println!("No story found with id: {}", id);
                     }

@@ -115,7 +115,15 @@ impl Story {
             self.name
         );
     }
+    pub fn print_details(&self) {
+        println!("{:15}: {}", "Story ID", self.id);
+        println!("{:15}: {}", "Name", self.name);
+        println!("{:15}: {}", "Completed", self.completed);
+        println!("{:15}: {}", "Description", self.description);
+        println!("{:15}: {}", "Created at", self.created_at);
+    }
     pub fn print_tasklist(&self) {
+        println!("{:15}:", "Tasks");
         for task in &self.tasks {
             task.print_checkbox_line();
         }

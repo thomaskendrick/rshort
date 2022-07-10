@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 use crate::story::Story;
+use crate::task::Task;
 use crate::RShortConfig;
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -76,6 +77,30 @@ impl StorybookClient {
             _ => Err(anyhow!(
                 "Recieved a bad status code when searching stories: {}",
                 response.status()
+            )),
+        }
+    }
+    pub async fn add_story_task(&self, story_id: &usize, message: &str) -> Result<Option<Task>> {
+        let body = HashMap::from([("description", message)]);
+        let response = self
+            .client
+            .post(format!(
+                "https://api.app.shortcut.com/api/v3/stories/{}/tasks",
+                story_id
+            ))
+            .json(&body)
+            .send()
+            .await?;
+        match response.status() {
+            StatusCode::CREATED => {
+                let task = response.json::<Task>().await?;
+                Ok(Some(task))
+            }
+            StatusCode::NOT_FOUND => Ok(None),
+            _ => Err(anyhow!(
+                "Recieved a bad status code when posting new task: {}, {}",
+                response.status(),
+                response.text().await?
             )),
         }
     }
