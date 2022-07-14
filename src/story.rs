@@ -123,9 +123,11 @@ impl Story {
         println!("{:15}: {}", "Created at", self.created_at);
     }
     pub fn print_tasklist(&self) {
-        println!("{:15}:", "Tasks");
-        for task in &self.tasks {
-            task.print_checkbox_line();
+        if !self.tasks.is_empty(){
+            println!("{:15}:", "Tasks");
+            for task in &self.tasks {
+                task.print_checkbox_line();
+            }
         }
     }
 }

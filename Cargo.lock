@@ -819,6 +819,7 @@ dependencies = [
  "confy",
  "env_logger",
  "log",
+ "regex",
  "reqwest",
  "serde",
  "termion",

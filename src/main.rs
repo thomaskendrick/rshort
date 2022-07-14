@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 pub mod api;
 pub mod story;
 pub mod task;
+pub mod git_story;
 
 #[derive(Parser, Debug)]
 #[clap(
@@ -50,7 +51,9 @@ enum StorySubcommand {
     },
     Get {
         #[clap(value_parser)]
-        id: usize,
+        id: Option<usize>,
+        #[clap(short, long, action)]
+        from_git: bool
     },
     AddTask {
         #[clap(value_parser)]
@@ -73,6 +76,7 @@ async fn main() -> Result<()> {
         return Ok(());
     }
 
+
     match &cli.command {
         Commands::Story(subcommand) => {
             match &subcommand {
@@ -90,16 +94,37 @@ async fn main() -> Result<()> {
                         story.print_line();
                     }
                 }
-                StorySubcommand::Get { id } => {
+                StorySubcommand::Get{from_git ,id}  => {
+
+                    let target_story: usize;
+
+                    match id {
+                        Some(id) => {
+                            target_story = *id;
+                        }
+                        None => {
+                            if *from_git {
+                                let git_result = git_story::detect();
+                                if let Some(git_id) = git_result {
+                                    target_story = git_id;
+                                } else {
+                                    return Ok(());
+                                }
+                            } else {
+                                return Ok(());
+                            }
+                        }
+                    }
+
                     let client = api::StorybookClient::new(&cfg);
 
-                    let result = client.get_story(id).await?;
+                    let result = client.get_story(target_story).await?;
 
                     if let Some(story) = result {
                         story.print_details();
                         story.print_tasklist();
                     } else {
-                        println!("No story found with id: {}", id);
+                        println!("No story found with id: {}", target_story);
                     }
                 }
                 StorySubcommand::AddTask { id, message } => {
@@ -108,7 +133,7 @@ async fn main() -> Result<()> {
                     let result = client.add_story_task(id, message).await?;
 
                     if let Some(task) = result {
-                        let story = client.get_story(&task.story_id).await?;
+                        let story = client.get_story(task.story_id).await?;
                         if let Some(story) = story {
                             story.print_details();
                             story.print_tasklist();

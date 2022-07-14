@@ -58,7 +58,7 @@ impl StorybookClient {
             )),
         }
     }
-    pub async fn get_story(&self, id: &usize) -> Result<Option<Story>> {
+    pub async fn get_story(&self, id: usize) -> Result<Option<Story>> {
         let response = self
             .client
             .get(format!(
